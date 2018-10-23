@@ -25,4 +25,21 @@ class TimelineAPI extends Plurk {
         	return array('status' => false, 'content' => $error['error_text']);
         }
     }
+
+    public function uploadPicture($image_content, $image_name, $image_type) {
+        $API_url = 'APP/Timeline/uploadPicture';
+        $parameters = array(
+            'image_content'=>$image_content,
+            'image_name'=>$image_name,
+            'image_type'=>$image_type,
+        );
+        $result = $this->API_request($API_url, $parameters, true);
+
+        if ( $result['result'] ) {
+            return array('status' => true, 'content' => $result['content']);            
+        } else {
+            $error = json_decode($result['content'], true);
+            return array('status' => false, 'content' => $error['error_text']);
+        }
+    }
 }

@@ -22,7 +22,6 @@ class ProfileAPI extends Plurk {
         } else {
             $error = json_decode($result['content'], true);
         	return array('status' => false, 'content' => $error['error_text']);
-        }
-        //return $this->API_request($API_url,$parameters);
+        }        
     }
 }

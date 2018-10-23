@@ -18,3 +18,4 @@
 Route::get('/', 'IndexController@index');
 Route::get('/login_app', 'IndexController@login_app');
 Route::get('/callback', 'IndexController@callback');
+Route::post('/uploadImage', 'IndexController@uploadImage');

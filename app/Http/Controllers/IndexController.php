@@ -24,14 +24,15 @@ class IndexController extends Controller {
     		return redirect('/login_app');
     	}
     
-    	$getPlurk = $this->TimelineAPI->getPlurk(1371813309);
-        if ( $getPlurk['status'] ) {
-            var_dump($getPlurk['content']);    
-        } else {
-            echo $getPlurk['content'];
-        }
+    	// $getPlurk = $this->TimelineAPI->getPlurk(1371813309);
+     //    if ( $getPlurk['status'] ) {
+     //        var_dump($getPlurk['content']);    
+     //    } else {
+     //        echo $getPlurk['content'];
+     //    }
         //var_dump($this->UserAPI->UserMe());
-		//return view('welcome', $this->view_data);
+		
+        return view('test', $this->view_data);
 	}
 
     public function login_app($platform = 'PC') {        
@@ -42,7 +43,7 @@ class IndexController extends Controller {
     	echo 'get authorization url failed';
     }
 
-    public function callback(Request $request) {        
+    public function callback(Request $request) {          
     	if ( $request->has('oauth_token') ) {
     		$oauth_token = $request->get('oauth_token');
     		$oauth_verifier = $request->get('oauth_verifier');
@@ -57,4 +58,14 @@ class IndexController extends Controller {
     	}    	
     }
 
+    public function uploadImage(Request $request) {
+        $image = $request->file('picture');
+        $image_name = time().'_'.substr(md5(time()), 0, 5).".".$image->getClientOriginalExtension();
+        $destinationPath = public_path('temp_images');
+        $image->move($destinationPath, $image_name);        
+        $image_type = image_type_to_mime_type(exif_imagetype($destinationPath."\\".$image_name));
+        $image_content = file_get_contents($destinationPath."\\".$image_name);        
+        $uploadPicture = $this->TimelineAPI->uploadPicture($image_content, $image_name, $image_type);
+        dd($uploadPicture);
+    }
 }

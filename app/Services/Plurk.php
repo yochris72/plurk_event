@@ -58,26 +58,33 @@ class Plurk {
     	Session::forget('oauth_token_secret');
     }
 
-    protected function API_request($url, $parameters = array()) {
+    protected function API_request($url, $parameters = array(), $upload = false) {
 		$oauth_array = array(
 			'oauth_consumer_key'=>config('app.consumer_key'),
-			'oauth_nonce'=>uniqid(mt_rand(1, 1000)),
+			'oauth_token'=>Session::get('oauth_access_token'),			
 			'oauth_signature_method'=>'HMAC-SHA1',
 			'oauth_timestamp'=>time(),
-			'oauth_version'=>'1.0',
-			'oauth_token'=>Session::get('oauth_access_token'),
+			'oauth_nonce'=>uniqid(mt_rand(1, 1000)),
+			'oauth_version'=>'1.0',			
 		);
 
-		foreach ($parameters as $key => $value) {
-			$oauth_array[$key] = $value;
+		if ( !$upload ) {
+			foreach ($parameters as $key => $value) {
+				$oauth_array[$key] = $value;
+			}
 		}
 
+		$curl_array = $oauth_array;
 		$request_url = config('app.plurk_domain').$url;
 		ksort($oauth_array);
 		$query_parameters = $this->buildquery($oauth_array);
-		$oauth_array['oauth_signature'] = $this->getSignature($query_parameters, $request_url);
+		$curl_array['oauth_signature'] = $this->getSignature($query_parameters, $request_url);
 
-		$result = $this->doRequest($request_url, 'POST', $oauth_array);
+		if ( $upload ) {
+			$result = $this->doUploadRequest($request_url, 'POST', $curl_array, $parameters);
+		} else {
+			$result = $this->doRequest($request_url, 'POST', $curl_array);			
+		} 
 
 		$status = ( $result['result'] ) ? true : false;
 		$content = $status ? json_decode($result['content'], true) : $result['content'];
@@ -175,6 +182,49 @@ class Plurk {
 	    $result = curl_exec($ch);
 	    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	    curl_close($ch);
+
+	    $status = ( $code == 200 ) ? true : false;
+	    return array('result'=>$status, 'content'=>$result);
+	}
+
+    public function doUploadRequest($url, $method = 'POST', $curl_array, $parameter = [])
+    {    	
+		$h = $header = array();		
+		
+		$delimiter = "----" . uniqid();
+	    $data = "--" . $delimiter . "\r\n";	    
+	    $data .= "Content-Disposition: form-data; name=\"image\"; filename=\"" . $parameter['image_name'] . "\"\r\n";	    
+	    $data .= "Content-Type: " . $parameter['image_type'] . "\r\n\r\n";
+	    $data .= $parameter['image_content'] . "\r\n"; 
+		$data .= "--" . $delimiter . "--";
+
+		foreach ($curl_array as $name => $value) {
+		    if (strncmp($name, 'oauth_', 6) == 0 || strncmp($name, 'xoauth_', 7) == 0) {
+		        $h[] = $name.'="'.$value.'"';
+		    }
+		}
+		$hs = implode(',', $h);
+		$header[] = "Authorization: OAuth ". $hs;		
+		$header[] = "cache-control: no-cache";
+		$header[] = "content-type: multipart/form-data; boundary=".$delimiter;	
+
+		$curl = curl_init();
+
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $url,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "POST",
+			CURLOPT_POSTFIELDS => $data,
+			CURLOPT_HTTPHEADER => $header,
+		));
+
+	    $result = curl_exec($curl);
+	    $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+	    curl_close($curl);
 
 	    $status = ( $code == 200 ) ? true : false;
 	    return array('result'=>$status, 'content'=>$result);
