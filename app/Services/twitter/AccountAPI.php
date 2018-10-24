@@ -2,15 +2,15 @@
 
 namespace App\Services\Twitter;
 
-class StatusesAPI extends Twitter {
+class AccountAPI extends Twitter {
 
     public function __construct() {  
     	$this->domain = config('app.twitter_domain');
         $this->ver = config('app.twitter_ver');
     }
 
-    public function getHomeTimeline() {
-        $url = $this->domain . $this->ver . '/statuses/home_timeline.json';
+    public function VerifyCredentials() {
+        $url = $this->domain . $this->ver . '/account/verify_credentials.json';
         $getfield = '';
         $requestMethod = 'GET';  
 

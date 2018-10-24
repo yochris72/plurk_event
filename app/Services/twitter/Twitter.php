@@ -276,7 +276,7 @@ class Twitter extends oAuth {
                 $options[CURLOPT_URL] .= $getfield;
             }
         }
-
+        
         $feed = curl_init();
         curl_setopt_array($feed, $options);
         $json = curl_exec($feed);
@@ -380,7 +380,7 @@ class Twitter extends oAuth {
     }
 
     public function getoAuthToken() {
-    	$url = $this->request_token_url;
+    	$url = $this->request_token_url;        
         $postfield = array();
         $requestMethod = 'POST';
         $token_info = $this->setPostfields($postfield)->buildOauth($url, $requestMethod)->performRequest();  

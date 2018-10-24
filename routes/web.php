@@ -16,9 +16,17 @@
 // });
 
 Route::get('/', 'IndexController@index');
-Route::get('/login_plurk', 'IndexController@login_plurk');
+
+// login logout Plurk
+Route::get('/login_plurk', 'IndexController@login_plurk')->name('login_plurk');
 Route::get('/callback_plurk', 'IndexController@callback_plurk');
+Route::get('/logout_plurk', 'IndexController@logout_plurk')->name('logout_plurk');
+
+// Plurk API
 Route::post('/uploadImage', 'IndexController@uploadImage');
 
-Route::get('/login_twitter', 'IndexController@login_twitter');
+
+// login logout Twitter
+Route::get('/login_twitter', 'IndexController@login_twitter')->name('login_twitter');
 Route::get('/callback_twitter', 'IndexController@callback_twitter');
+Route::get('/logout_twitter', 'IndexController@logout_twitter')->name('logout_twitter');

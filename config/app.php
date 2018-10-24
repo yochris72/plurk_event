@@ -143,6 +143,8 @@ return [
 
     'twitter_domain' => env('TWITTER_DOMAIN', 'https://api.twitter.com/'),
 
+    'twitter_ver' => env('TWITTER_API_VER', '1.1'),
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
