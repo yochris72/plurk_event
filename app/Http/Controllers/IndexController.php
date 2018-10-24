@@ -4,25 +4,44 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
-use App\Services\Plurk;
-use App\Services\UserAPI;
-use App\Services\TimelineAPI;
+use App\Services\oAuth;
+use App\Services\Plurk\Plurk;
+use App\Services\Plurk\UserAPI;
+use App\Services\Plurk\TimelineAPI;
+use App\Services\twitter\Twitter;
+use App\Services\twitter\StatusesAPI;
 use Session;
+
 
 class IndexController extends Controller {
 
 	var $view_data = array();
 
-	public function __construct(Plurk $plurk, UserAPI $UserAPI, TimelineAPI $TimelineAPI) {
+	public function __construct(Plurk $plurk, UserAPI $UserAPI, TimelineAPI $TimelineAPI,
+                                Twitter $Twitter, StatusesAPI $StatusesAPI) {
 		$this->plurk = $plurk;
 		$this->UserAPI = $UserAPI;
         $this->TimelineAPI = $TimelineAPI;
+        $this->Twitter = $Twitter;
+        $this->StatusesAPI = $StatusesAPI;
     }
 
     public function index() { 
-    	if ( !Session::has('oauth_access_token') ) {
-    		return redirect('/login_app');
-    	}
+        //dd(Session::all());
+        // if ( !Session::has('oauth_access_token') ) {
+        //     return redirect('/login_app');
+        // }
+
+        // if ( !Session::has('oauth_twitter_access_token') ) {            
+        //     return redirect($this->Twitter->getAuthorizeUrl());
+        // }
+
+
+        return $this->StatusesAPI->getHomeTimeline(); 
+
+    	// if ( !Session::has('oauth_access_token') ) {
+    	// 	return redirect('/login_app');
+    	// }
     
     	// $getPlurk = $this->TimelineAPI->getPlurk(1371813309);
      //    if ( $getPlurk['status'] ) {
@@ -32,31 +51,8 @@ class IndexController extends Controller {
      //    }
         //var_dump($this->UserAPI->UserMe());
 		
-        return view('test', $this->view_data);
+        //return view('test', $this->view_data);
 	}
-
-    public function login_app($platform = 'PC') {        
-    	$redirect_url = $this->plurk->get_authorization_url();
-    	if ( $redirect_url ) {
-    		return redirect($redirect_url);
-    	}
-    	echo 'get authorization url failed';
-    }
-
-    public function callback(Request $request) {          
-    	if ( $request->has('oauth_token') ) {
-    		$oauth_token = $request->get('oauth_token');
-    		$oauth_verifier = $request->get('oauth_verifier');
-    		$get_token = $this->plurk->get_access_token($oauth_token, $oauth_verifier);
-    		if ( $get_token ) {
-    			return redirect('/');
-    		} else {
-    			echo 'get access token failed';
-    		}
-    	} else {
-    		echo 'invalid request';
-    	}    	
-    }
 
     public function uploadImage(Request $request) {
         $image = $request->file('picture');
@@ -68,4 +64,59 @@ class IndexController extends Controller {
         $uploadPicture = $this->TimelineAPI->uploadPicture($image_content, $image_name, $image_type);
         dd($uploadPicture);
     }
+
+    public function login_plurk($platform = 'PC') {        
+        $redirect_url = $this->plurk->get_authorization_url();
+        if ( $redirect_url ) {
+            return redirect($redirect_url);
+        }
+        echo 'plurk service down...';
+    }    
+
+    public function login_twitter() {
+        $url = $this->Twitter->getAuthorizeUrl();
+        if ( $url ) {
+            return redirect($url);    
+        } else {
+            return "twitter service down...";
+        }
+    
+    }
+
+    public function callback_plurk(Request $request) {          
+        $getResult = $this->plurk->getAccessToken($request);
+        switch ($getResult) {
+            case -1:
+                // get access token failed
+                return "get access token failed (Plurk)";
+                break;
+            case 1:
+                // callback success
+                return redirect('/');
+                break;
+            default:
+                // invalid request
+                return "invalid request";
+                break;
+        }
+    }
+
+    public function callback_twitter(Request $request) {                  
+        $getResult = $this->Twitter->getAccessToken($request);
+        switch ($getResult) {
+            case -1:
+                // get access token failed
+                return "get access token failed (Twitter)";
+                break;
+            case 1:
+                // callback success
+                return redirect('/');
+                break;
+            default:
+                // invalid request
+                return "invalid request";
+                break;
+        }
+    }
+    
 }

@@ -16,6 +16,9 @@
 // });
 
 Route::get('/', 'IndexController@index');
-Route::get('/login_app', 'IndexController@login_app');
-Route::get('/callback', 'IndexController@callback');
+Route::get('/login_plurk', 'IndexController@login_plurk');
+Route::get('/callback_plurk', 'IndexController@callback_plurk');
 Route::post('/uploadImage', 'IndexController@uploadImage');
+
+Route::get('/login_twitter', 'IndexController@login_twitter');
+Route::get('/callback_twitter', 'IndexController@callback_twitter');

@@ -126,7 +126,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | PLURK SETTING
+    | PLURK & TWITTER SETTING
     |--------------------------------------------------------------------------
     |
     */
@@ -135,7 +135,13 @@ return [
 
     'consumer_secret' => env('PLURK_CONSUMER_SECRET', ''),
 
+    'twitter_consumer_key' => env('TWITTER_CONSUMER_KEY', ''),
+
+    'twitter_consumer_secret' => env('TWITTER_CONSUMER_SECRET', ''),
+
     'plurk_domain' => env('PLURK_DOMAIN', 'https://www.plurk.com/'),
+
+    'twitter_domain' => env('TWITTER_DOMAIN', 'https://api.twitter.com/'),
 
     /*
     |--------------------------------------------------------------------------

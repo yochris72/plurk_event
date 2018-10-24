@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Plurk;
+use App\Services\oAuth as oAuth;
 use Session;
 
-class Plurk {
+class Plurk extends oAuth {
 	protected $plurk_domain;
 
     protected $request_token_url;
@@ -48,7 +49,7 @@ class Plurk {
 
     	Session::put('oauth_access_token', $request_token['oauth_token']);
 		Session::put('oauth_access_token_secret', $request_token['oauth_token_secret']);
-    	return $request_token;
+    	return true;
     }
 
     public function clear_token() {
@@ -241,4 +242,19 @@ class Plurk {
 	    }
 	    return $query;
 	}
+
+    public function getAccessToken($request) {
+    	if ( $request->has('oauth_token') ) {
+            $oauth_token = $request->get('oauth_token');
+            $oauth_verifier = $request->get('oauth_verifier');
+            $get_token = $this->get_access_token($oauth_token, $oauth_verifier);
+            if ( $get_token ) {
+                return 1;
+            } else {
+                return -1;
+            }
+        } else {
+            return 0;
+        }    
+    }
 }
