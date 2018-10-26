@@ -5,17 +5,13 @@ namespace App\Services\Plurk;
 class UserAPI extends Plurk {
 
     public function __construct() {  
-
+        $this->plurk_domain = config('app.plurk_domain');
     }
 
     public function UserMe() {
-        $API_url = 'APP/Users/me';
-        $result = $this->API_request($API_url);
-        if ( $result['result'] ) {
-            return array('status' => true, 'content' => $result['content']);        	
-        } else {
-            $error = json_decode($result['content'], true);
-        	return array('status' => false, 'content' => $error['error_text']);
-        }
+        $url = $this->plurk_domain . 'APP/Users/me';
+        $field = array();
+
+        return $this->CallAPI($field, $url);
     }
 }

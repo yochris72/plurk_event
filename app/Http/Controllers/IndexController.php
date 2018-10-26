@@ -7,9 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Services\oAuth;
 use App\Services\Plurk\Plurk;
 use App\Services\Plurk\UserAPI;
+use App\Services\Plurk\ProfileAPI;
 use App\Services\Plurk\TimelineAPI;
 use App\Services\twitter\Twitter;
 use App\Services\twitter\AccountAPI;
+use App\Services\twitter\StatusesAPI;
 use Session;
 
 
@@ -17,20 +19,22 @@ class IndexController extends Controller {
 
 	var $view_data = array();
 
-	public function __construct(Plurk $Plurk, UserAPI $UserAPI, TimelineAPI $TimelineAPI,
-                                Twitter $Twitter, AccountAPI $AccountAPI) {
+	public function __construct(Plurk $Plurk, UserAPI $UserAPI, ProfileAPI $ProfileAPI, TimelineAPI $TimelineAPI,
+                                Twitter $Twitter, AccountAPI $AccountAPI, StatusesAPI $StatusesAPI) {
 		$this->Plurk = $Plurk;
 		$this->UserAPI = $UserAPI;
+        $this->ProfileAPI = $ProfileAPI;
         $this->TimelineAPI = $TimelineAPI;
         $this->Twitter = $Twitter;
         $this->AccountAPI = $AccountAPI;
+        $this->StatusesAPI = $StatusesAPI;
     }
 
     public function index() { 
         $plurk_login = false;
         $twitter_login = false;
         //dd(Session::all());
-        if ( Session::has('oauth_access_token') ) {
+        if ( Session::has('oauth_plurk_access_token') ) {
             $plurk_login = true;
         } 
 
@@ -38,55 +42,39 @@ class IndexController extends Controller {
             $twitter_login = true;
         }
 
-        if ( $plurk_login ) {
+        if ( $plurk_login ) {            
             $myData = $this->UserAPI->UserMe();
             $this->view_data['plurk_data'] = $myData['content'];
         }
 
         if ( $twitter_login ) {
-            $userVerify = json_decode($this->AccountAPI->VerifyCredentials(), true);
-            $this->view_data['twitter_data'] = $userVerify;
+            //dd($this->StatusesAPI->showbyID(1055437019025825792));
+            $userVerify = $this->AccountAPI->VerifyCredentials();            
+            $this->view_data['twitter_data'] = $userVerify['content'];
         }
 
-
-        // if ( !Session::has('oauth_twitter_access_token') ) {            
-        //     return redirect($this->Twitter->getAuthorizeUrl());
-        // }
-        // return redirect('/login_app');
-
-
-        //return $this->StatusesAPI->getHomeTimeline(); 
-
-    	// if ( !Session::has('oauth_access_token') ) {
-    	// 	return redirect('/login_app');
-    	// }
-    
-    	// $getPlurk = $this->TimelineAPI->getPlurk(1371813309);
-     //    if ( $getPlurk['status'] ) {
-     //        var_dump($getPlurk['content']);    
-     //    } else {
-     //        echo $getPlurk['content'];
-     //    }
-        //var_dump($this->UserAPI->UserMe());
 		
         $this->view_data['plurk_login'] = $plurk_login;
         $this->view_data['twitter_login'] = $twitter_login;
         return view('index', $this->view_data);
 	}
 
-    public function uploadImage(Request $request) {
-        $image = $request->file('picture');
-        $image_name = time().'_'.substr(md5(time()), 0, 5).".".$image->getClientOriginalExtension();
-        $destinationPath = public_path('temp_images');
-        $image->move($destinationPath, $image_name);        
-        $image_type = image_type_to_mime_type(exif_imagetype($destinationPath."\\".$image_name));
-        $image_content = file_get_contents($destinationPath."\\".$image_name);        
-        $uploadPicture = $this->TimelineAPI->uploadPicture($image_content, $image_name, $image_type);
-        dd($uploadPicture);
+    public function testPlurkUpload() {
+        return view('test', $this->view_data);
+    } 
+
+    public function uploadPlurkImage(Request $request) {
+        $uploadPicture = $this->TimelineAPI->uploadPicture($request);
+        if ( $uploadPicture['status'] ) {            
+            echo "<img src=\"".$uploadPicture['content']['thumbnail']."\" /><br/>";
+            echo "<img src=\"".$uploadPicture['content']['full']."\" />";
+        } else {
+            echo "upload failed";
+        }        
     }
 
     public function login_plurk($platform = 'PC') {        
-        $redirect_url = $this->Plurk->get_authorization_url();
+        $redirect_url = $this->Plurk->getAuthorizeUrl();
         if ( $redirect_url ) {
             return redirect($redirect_url);
         }

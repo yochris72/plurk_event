@@ -414,6 +414,24 @@ class Twitter extends oAuth {
        	}            
     }
 
+    protected function CallAPI($field, $url) {
+        if ( is_array($field) ) {
+            $result = $this->setPostfields($field)->buildOauth($url, "POST")->performRequest();
+        } else {
+            $result = $this->setGetfield($field)->buildOauth($url, "GET")->performRequest();
+        }
+    
+        if ( $this->httpStatusCode == 200 ) {
+            return array('status' => true, 'content' => json_decode($result,true) );
+        } else {
+            $error = json_decode($result, true);
+            $error_ary = json_decode($error['errors'], true);
+            $error_message = $error_ary['message'];
+            $error_code = $error_ary['code'];
+            return array('status' => false, 'content' => $error_message);
+        }  
+    }
+
     public function clear_token() {
     	Session::forget('oauth_twitter_access_token');
     	Session::forget('oauth_twitter_access_token_secret');

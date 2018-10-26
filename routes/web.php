@@ -23,7 +23,8 @@ Route::get('/callback_plurk', 'IndexController@callback_plurk');
 Route::get('/logout_plurk', 'IndexController@logout_plurk')->name('logout_plurk');
 
 // Plurk API
-Route::post('/uploadImage', 'IndexController@uploadImage');
+Route::get('/testPlurkUpload', 'IndexController@testPlurkUpload');
+Route::post('/uploadPlurkImage', 'IndexController@uploadPlurkImage');
 
 
 // login logout Twitter

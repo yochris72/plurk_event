@@ -11,9 +11,8 @@ class AccountAPI extends Twitter {
 
     public function VerifyCredentials() {
         $url = $this->domain . $this->ver . '/account/verify_credentials.json';
-        $getfield = '';
-        $requestMethod = 'GET';  
+        $getfield = ''; 
 
-        return $this->setGetfield($getfield)->buildOauth($url, $requestMethod)->performRequest();
+        return $this->CallAPI($getfield, $url);
     }
 }

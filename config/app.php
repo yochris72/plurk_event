@@ -131,9 +131,9 @@ return [
     |
     */
 
-    'consumer_key' => env('PLURK_CONSUMER_KEY', ''),
+    'plurk_consumer_key' => env('PLURK_CONSUMER_KEY', ''),
 
-    'consumer_secret' => env('PLURK_CONSUMER_SECRET', ''),
+    'plurk_consumer_secret' => env('PLURK_CONSUMER_SECRET', ''),
 
     'twitter_consumer_key' => env('TWITTER_CONSUMER_KEY', ''),
 

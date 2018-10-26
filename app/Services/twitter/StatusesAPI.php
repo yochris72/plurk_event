@@ -12,8 +12,14 @@ class StatusesAPI extends Twitter {
     public function getHomeTimeline() {
         $url = $this->domain . $this->ver . '/statuses/home_timeline.json';
         $getfield = '';
-        $requestMethod = 'GET';  
 
-        return $this->setGetfield($getfield)->buildOauth($url, $requestMethod)->performRequest();
+        return $this->CallAPI($getfield, $url);
+    }
+
+    public function showbyID($id) {
+        $url = $this->domain . $this->ver . '/statuses/show.json';
+        $getfield = "id=$id"; 
+
+        return $this->CallAPI($getfield, $url);
     }
 }
