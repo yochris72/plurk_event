@@ -50,8 +50,7 @@ class IndexController extends Controller {
             $this->view_data['plurk_data'] = $myData['content'];
         }
 
-        if ( $twitter_login ) {
-            dd($this->TweetRepository->GetImageinTweet("https://twitter.com/MEPHIST0216/status/1055680811838595073"));
+        if ( $twitter_login ) {            
             $userVerify = $this->AccountAPI->VerifyCredentials();
             $this->view_data['twitter_data'] = $userVerify['content'];
         }
