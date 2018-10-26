@@ -424,10 +424,10 @@ class Twitter extends oAuth {
         if ( $this->httpStatusCode == 200 ) {
             return array('status' => true, 'content' => json_decode($result,true) );
         } else {
-            $error = json_decode($result, true);
-            $error_ary = json_decode($error['errors'], true);
-            $error_message = $error_ary['message'];
-            $error_code = $error_ary['code'];
+            $error = json_decode($result, true);            
+            //dd($error);
+            $error_message = $error['errors'][0]['message'];
+            $error_code = $error['errors'][0]['code'];
             return array('status' => false, 'content' => $error_message);
         }  
     }

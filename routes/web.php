@@ -26,8 +26,11 @@ Route::get('/logout_plurk', 'IndexController@logout_plurk')->name('logout_plurk'
 Route::get('/testPlurkUpload', 'IndexController@testPlurkUpload');
 Route::post('/uploadPlurkImage', 'IndexController@uploadPlurkImage');
 
-
 // login logout Twitter
 Route::get('/login_twitter', 'IndexController@login_twitter')->name('login_twitter');
 Route::get('/callback_twitter', 'IndexController@callback_twitter');
 Route::get('/logout_twitter', 'IndexController@logout_twitter')->name('logout_twitter');
+
+// Tweet API
+Route::get('/GetTweetImage', 'IndexController@GetTweetImage')->name('twitter.GetTweetImage');
+Route::post('/GetImageinTweet', 'IndexController@GetImageinTweet')->name('twitter.GetImageinTweet');

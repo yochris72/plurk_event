@@ -12,6 +12,7 @@ use App\Services\Plurk\TimelineAPI;
 use App\Services\twitter\Twitter;
 use App\Services\twitter\AccountAPI;
 use App\Services\twitter\StatusesAPI;
+use App\Repositories\twitter\TweetRepository;
 use Session;
 
 
@@ -20,7 +21,8 @@ class IndexController extends Controller {
 	var $view_data = array();
 
 	public function __construct(Plurk $Plurk, UserAPI $UserAPI, ProfileAPI $ProfileAPI, TimelineAPI $TimelineAPI,
-                                Twitter $Twitter, AccountAPI $AccountAPI, StatusesAPI $StatusesAPI) {
+                                Twitter $Twitter, AccountAPI $AccountAPI, StatusesAPI $StatusesAPI,
+                                TweetRepository $TweetRepository) {
 		$this->Plurk = $Plurk;
 		$this->UserAPI = $UserAPI;
         $this->ProfileAPI = $ProfileAPI;
@@ -28,6 +30,7 @@ class IndexController extends Controller {
         $this->Twitter = $Twitter;
         $this->AccountAPI = $AccountAPI;
         $this->StatusesAPI = $StatusesAPI;
+        $this->TweetRepository = $TweetRepository;
     }
 
     public function index() { 
@@ -42,14 +45,14 @@ class IndexController extends Controller {
             $twitter_login = true;
         }
 
-        if ( $plurk_login ) {            
+        if ( $plurk_login ) {
             $myData = $this->UserAPI->UserMe();
             $this->view_data['plurk_data'] = $myData['content'];
         }
 
         if ( $twitter_login ) {
-            //dd($this->StatusesAPI->showbyID(1055437019025825792));
-            $userVerify = $this->AccountAPI->VerifyCredentials();            
+            dd($this->TweetRepository->GetImageinTweet("https://twitter.com/MEPHIST0216/status/1055680811838595073"));
+            $userVerify = $this->AccountAPI->VerifyCredentials();
             $this->view_data['twitter_data'] = $userVerify['content'];
         }
 
@@ -59,13 +62,39 @@ class IndexController extends Controller {
         return view('index', $this->view_data);
 	}
 
+    public function GetTweetImage(Request $request) {
+        return view('gettweetimage', $this->view_data);
+    }
+
+    public function GetImageinTweet(Request $request) {
+        $obj = new \stdClass();
+        $obj->result = 0;
+        $obj->messege = "";
+        $obj->image_url = "";
+
+        if ( $request->has('tweet_url') ) {
+            $get_result = $this->TweetRepository->GetImageinTweet($request->get('tweet_url'));
+            if ( $get_result['result'] ) {
+                $obj->image_url = $get_result['media'];
+                $obj->result = 1;
+            } else {
+                $obj->messege = $get_result['messege'];
+            }
+        } else {
+            $obj->messege = "請輸入正確的網址";
+        }
+
+        $myJSON = json_encode($obj);
+        echo $myJSON;
+    }
+
     public function testPlurkUpload() {
         return view('test', $this->view_data);
-    } 
+    }
 
     public function uploadPlurkImage(Request $request) {
         $uploadPicture = $this->TimelineAPI->uploadPicture($request);
-        if ( $uploadPicture['status'] ) {            
+        if ( $uploadPicture['status'] ) {
             echo "<img src=\"".$uploadPicture['content']['thumbnail']."\" /><br/>";
             echo "<img src=\"".$uploadPicture['content']['full']."\" />";
         } else {
@@ -73,7 +102,7 @@ class IndexController extends Controller {
         }        
     }
 
-    public function login_plurk($platform = 'PC') {        
+    public function login_plurk($platform = 'PC') {
         $redirect_url = $this->Plurk->getAuthorizeUrl();
         if ( $redirect_url ) {
             return redirect($redirect_url);
@@ -81,7 +110,7 @@ class IndexController extends Controller {
         echo 'plurk service down...';
     }    
 
-    public function logout_plurk() {        
+    public function logout_plurk() {
         $this->Plurk->clear_token();
         return redirect('/');
     }   
@@ -89,18 +118,18 @@ class IndexController extends Controller {
     public function login_twitter() {
         $url = $this->Twitter->getAuthorizeUrl();
         if ( $url ) {
-            return redirect($url);    
+            return redirect($url);
         } else {
             return "twitter service down...";
         }    
     }
 
-    public function logout_twitter() {        
+    public function logout_twitter() {
         $this->Twitter->clear_token();
         return redirect('/');
     }   
 
-    public function callback_plurk(Request $request) {          
+    public function callback_plurk(Request $request) {
         $getResult = $this->Plurk->getAccessToken($request);
         switch ($getResult) {
             case -1:
@@ -118,7 +147,7 @@ class IndexController extends Controller {
         }
     }
 
-    public function callback_twitter(Request $request) {                  
+    public function callback_twitter(Request $request) {
         $getResult = $this->Twitter->getAccessToken($request);
         switch ($getResult) {
             case -1:
